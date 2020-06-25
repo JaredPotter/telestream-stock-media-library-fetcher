@@ -1,0 +1,24 @@
+{
+  "name": "telestream-stock-media-library-fetcher",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JaredPotter/telestream-stock-media-library-fetcher.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JaredPotter/telestream-stock-media-library-fetcher/issues"
+  },
+  "homepage": "https://github.com/JaredPotter/telestream-stock-media-library-fetcher#readme",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "es6-promise-pool": "^2.5.0"
+  }
+}

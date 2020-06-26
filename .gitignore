@@ -5,3 +5,15 @@ audio_list.json
 video_list.json
 
 graphic_list.json
+
+.env
+
+audio/
+
+video/
+
+graphic/
+
+.vscode
+
+.DS_Store

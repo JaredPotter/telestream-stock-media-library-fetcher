@@ -5,17 +5,19 @@ const PromisePool = require("es6-promise-pool");
 const BASE_VIDEO_URL = "https://api.cloud.telestream.net/sm/v1.0/video";
 
 let startingId = 0;
-const videoItemsList = [];
+let videoItemsMap = {};
+let lastFetchedId;
 
 try {
   const file = fs.readFileSync("video_list.json", "UTF8");
   const payload = JSON.parse(file);
   startingId = payload.lastFetchedId ? payload.lastFetchedId : 0;
-
-  videoItemsList.push(...payload.list);
+  videoItemsMap = JSON.parse(JSON.stringify(payload.itemsMap));
 } catch (error) {
   // do nothing
 }
+
+lastFetchedId = startingId;
 
 const IS_PRINTING = false;
 
@@ -34,8 +36,8 @@ const IS_PRINTING = false;
   const generatePromises = function* () {
     console.log("Starting at ID: " + startingId);
     console.log("Ending a ID: " + latestVideoId);
-    for (let i = startingId; i <= latestVideoId; i++) {
-      // for (let i = startingId; i <= 1000; i++) {
+    for (let i = startingId; i < latestVideoId; i++) {
+      // for (let i = startingId; i < 11; i++) { // testing / dev
       const itemUrl = `${BASE_VIDEO_URL}/${i}`;
 
       yield fetchItem(itemUrl, i);
@@ -51,7 +53,7 @@ const IS_PRINTING = false;
     if (event.data.result !== "ERROR") {
       const item = event.data.result.data.info;
 
-      videoItemsList.push(item);
+      videoItemsMap[item.id] = item;
     }
   });
 
@@ -62,11 +64,11 @@ const IS_PRINTING = false;
   poolPromise.then(
     function () {
       console.log("All promises fulfilled");
-      const id = videoItemsList[videoItemsList.length - 1].id;
       const payload = {
-        lastFetchedId: id,
-        list: videoItemsList,
+        lastFetchedId,
+        itemsMap: videoItemsMap,
       };
+
       // Final Save
       console.log("Performing Final Save!");
       fs.writeFileSync("video_list.json", JSON.stringify(payload));
@@ -91,12 +93,15 @@ function fetchItem(itemUrl, id) {
           console.log("Success");
         }
 
-        if (id % 2500 === 0) {
+        if (id % 500 === 0) {
+          // if (id % 5 === 0) {
           //Save every 2500th ID
-          console.log("Saving another 2500th - with ID: " + id);
+          console.log("Saving another 500th - with ID: " + id);
+
+          lastFetchedId = id;
           const payload = {
-            lastFetchedId: id,
-            list: videoItemsList,
+            lastFetchedId,
+            itemsMap: videoItemsMap,
           };
           fs.writeFileSync("video_list.json", JSON.stringify(payload));
         }

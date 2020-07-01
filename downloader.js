@@ -1,4 +1,3 @@
-// const axios = require("axios");
 const axios = require("axios");
 const dotenv = require("dotenv");
 const fs = require("fs-extra");
@@ -27,24 +26,25 @@ const IS_PRINTING = true;
   }
 
   if (type !== "video" && type !== "graphic" && type !== "audio") {
-    console.log("type paramenter required. E.g. node download.js video");
+    console.log("type paramenter required. E.g. node downloader.js video");
     return;
   }
 
   const fileName = `${type}_list.json`;
-  const file = fs.readFileSync(fileName, "UTF8");
-  const list = JSON.parse(file).list;
+  let list;
+
+  try {
+    const file = fs.readFileSync(fileName, "UTF8");
+    list = JSON.parse(file).list;
+  } catch (error) {
+    console.log("ERROR: Failed to read/parse File!");
+    console.log(error);
+    return;
+  }
+
   console.log(`Item Count: ${list.length}`);
 
-  // const list = [
-  //   {
-  //     id: 28,
-  //   },
-  // ];
-
   const generatePromises = function* () {
-    // console.log("Starting at ID: " + startingId);
-    // console.log("Ending a ID: " + latestAudioId);
     // for (let i = 0; i < list.length; i++) {
     for (let i = 0; i < 100; i++) {
       const item = list[i];
@@ -87,9 +87,11 @@ function downloadItem(type, item, SERIAL_KEY) {
         mediaDownloadUrl = response.data.info.alternateFormats.MP3;
       } else if (type === "video") {
         // mediaDownloadUrl = response.data.info;
+        // todo: add video download
       } else if (type === "graphic") {
         if (item.has_alpha) {
           // Is Alpha Layer, download PNG version
+          // todo: add graphic download
           debugger;
           mediaDownloadUrl = response.data.info.alternateFormats.PNG;
         } else {

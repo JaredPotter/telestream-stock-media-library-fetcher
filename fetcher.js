@@ -7,8 +7,8 @@ const mongoDb = require("./mongodb");
 const IS_PRINTING = false;
 
 const args = process.argv.slice(2);
-// const type = args[0];
-const type = "audio";
+const type = args[0];
+// const type = "audio";
 
 console.log(`asset type: ${type}`);
 

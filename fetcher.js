@@ -69,7 +69,8 @@ lastFetchedId = startingId;
   // const promiseProducer = generatePromises();
 
   let currentId = 0;
-
+  console.log("Starting at ID: " + startingId);
+  console.log("Ending a ID: " + latestAssetId);
   const promiseProducer = function () {
     if (currentId < latestAssetId) {
       const itemUrl = `${BASE_URL}/${currentId}`;
@@ -123,6 +124,10 @@ function fetchItem(itemUrl, id, mongoDb) {
           _id: id,
           asset: info,
         };
+
+        lastFetchedId = id;
+
+        fs.writeFile(JSON_FILENAME, { lastFetchedId }, () => null);
 
         mongoDb.insert(type, asset);
 

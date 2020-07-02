@@ -145,7 +145,8 @@ function fetchItem(itemUrl, id, mongoDb) {
           console.log("Fail");
         }
 
-        reject(error);
+        resolve(); // lol
+        // reject(error);
         return;
       });
   });

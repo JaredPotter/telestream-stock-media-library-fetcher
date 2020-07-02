@@ -69,9 +69,10 @@ lastFetchedId = startingId;
   // };
   // const promiseProducer = generatePromises();
 
-  let currentId = 0;
+  let currentId = startingId;
   console.log("Starting at ID: " + startingId);
   console.log("Ending a ID: " + latestAssetId);
+
   const promiseProducer = function () {
     if (currentId < latestAssetId) {
       const itemUrl = `${BASE_URL}/${currentId}`;

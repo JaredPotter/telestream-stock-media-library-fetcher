@@ -8,7 +8,7 @@
 
 Node.js
 
-MongoDB (required since meta data grows beyond system memory limits)
+MongoDB (https://www.mongodb.com/try/download/community?tck=docs_server)
 
 # Usage
 

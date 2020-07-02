@@ -2,7 +2,9 @@ const axios = require("axios");
 const fs = require("fs");
 const PromisePool = require("es6-promise-pool");
 
-const IS_PRINTING = true;
+const mongoDb = require("./mongodb");
+
+const IS_PRINTING = false;
 
 const args = process.argv.slice(2);
 const type = args[0];
@@ -32,8 +34,6 @@ try {
 lastFetchedId = startingId;
 
 (async () => {
-  const mongoDb = require("./mongodb");
-
   try {
     isDatabaseConnected = await mongoDb.connect();
   } catch (error) {
@@ -54,49 +54,59 @@ lastFetchedId = startingId;
   });
   const latestAssetId = latestAsset.data.info[0].id;
 
-  const generatePromises = function* () {
-    console.log("Starting at ID: " + startingId);
-    console.log("Ending a ID: " + latestAssetId);
+  // const generatePromises = function* () {
+  //   console.log("Starting at ID: " + startingId);
+  //   console.log("Ending a ID: " + latestAssetId);
 
-    // for (let i = startingId; i < latestAssetId; i++) {
-    for (let i = startingId; i < 5; i++) {
-      // testing / dev
-      const itemUrl = `${BASE_URL}/${i}`;
+  //   // for (let id = startingId; id < latestAssetId; id++) {
+  //   for (let id = startingId; id < 5; id++) {
+  //     // testing / dev
+  //     const itemUrl = `${BASE_URL}/${id}`;
 
-      yield fetchItem(itemUrl, i);
+  //     yield fetchItem(itemUrl, id);
+  //   }
+  // };
+  // const promiseProducer = generatePromises();
+
+  let currentId = 0;
+
+  const promiseProducer = function () {
+    if (currentId < latestAssetId) {
+      const itemUrl = `${BASE_URL}/${currentId}`;
+
+      currentId++;
+
+      return fetchItem(itemUrl, currentId, mongoDb);
+    } else {
+      return null;
     }
   };
 
-  const promiseProducer = generatePromises();
-
-  const concurrency = 100;
+  const concurrency = 25;
   const pool = new PromisePool(promiseProducer, concurrency);
 
-  pool.addEventListener("fulfilled", function (event) {
-    if (event.data.result !== "ERROR") {
-      const asset = event.data.result;
-      try {
-        mongoDb.insert(type, asset);
-      } catch (error) {}
-    }
-  });
-
   console.log("Starting Request Pool!");
-  const poolPromise = pool.start();
+  pool
+    .start()
+    .then(
+      () => {
+        console.log("All promises fulfilled");
 
-  // Wait for the pool to settle.
-  poolPromise.then(
-    function () {
-      console.log("All promises fulfilled");
-    },
-    function (error) {
-      console.log("Some promise rejected: " + error.message);
-    }
-  );
+        mongoDb.close();
+        return;
+      },
+      (error) => {
+        console.log("Some promise rejected: " + error.message);
+      }
+    )
+    .catch((error) => {
+      console.log(error);
+      debugger;
+    });
 })();
 
-function fetchItem(itemUrl, id) {
-  return new Promise(async (resolve, reject) => {
+function fetchItem(itemUrl, id, mongoDb) {
+  return new Promise((resolve, reject) => {
     if (IS_PRINTING) {
       console.log("Requesting: " + itemUrl);
     }
@@ -108,17 +118,24 @@ function fetchItem(itemUrl, id) {
           console.log("Success");
         }
 
-        const asset = result.data.info;
+        const info = result.data.info;
+        const asset = {
+          _id: id,
+          asset: info,
+        };
 
-        resolve({ _id: id, asset });
+        mongoDb.insert(type, asset);
+
+        resolve();
+        return;
       })
       .catch((error) => {
         if (IS_PRINTING) {
           console.log("Fail");
         }
 
-        resolve("ERROR");
         reject(error);
+        return;
       });
   });
 }

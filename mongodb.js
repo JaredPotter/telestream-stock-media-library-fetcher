@@ -9,9 +9,13 @@ const DATABASE_NAME = "stock-media-library-db";
 
 let database;
 
-const connect = function () {
+let connectionClient;
+
+const connect = async function () {
   return new Promise((resolve, reject) => {
     mongoClient.connect(MONGO_DB_URL, SETTINGS, function (err, client) {
+      connectionClient = client;
+
       if (err) {
         reject(err);
       } else {
@@ -21,6 +25,12 @@ const connect = function () {
       }
     });
   });
+};
+
+const close = function () {
+  debugger;
+  connectionClient.close();
+  console.log("Database Connection CLOSED!");
 };
 
 const insert = function (type, asset) {
@@ -39,4 +49,4 @@ const insert = function (type, asset) {
   });
 };
 
-module.exports = { connect, insert };
+module.exports = { connect, insert, close };

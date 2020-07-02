@@ -8,6 +8,8 @@
 
 Node.js
 
+MongoDB (required since meta data grows beyond system memory limits)
+
 # Usage
 
 `npm install`

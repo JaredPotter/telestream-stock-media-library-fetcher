@@ -16,17 +16,15 @@ if (type !== "video" && type !== "audio" && type !== "graphic") {
 }
 
 const BASE_URL = `https://api.cloud.telestream.net/sm/v1.0/${type}`;
-const JSON_FILENAME = `${type}_list.json`;
+const JSON_FILENAME = `${type}_info.json`;
 
 let startingId = 0;
-let itemsMap = {};
 let lastFetchedId;
 
 try {
   const file = fs.readFileSync(JSON_FILENAME, "UTF8");
   const payload = JSON.parse(file);
   startingId = payload.lastFetchedId ? payload.lastFetchedId : 0;
-  itemsMap = JSON.parse(JSON.stringify(payload.itemsMap));
 } catch (error) {
   // do nothing
 }
@@ -34,6 +32,17 @@ try {
 lastFetchedId = startingId;
 
 (async () => {
+  const mongoDb = require("./mongodb");
+
+  try {
+    isDatabaseConnected = await mongoDb.connect();
+  } catch (error) {
+    console.log(error);
+    console.log("Failed to connect to database.");
+    console.log("Script will now abort!");
+    return;
+  }
+
   // Fetch most recent asset ID:
   // e.g. https://api.cloud.telestream.net/sm/v1.0/video/search?num_results=12&sort=most_recent&page=1&keywords=*
   const latestAsset = await axios.get(`${BASE_URL}/search`, {
@@ -50,7 +59,7 @@ lastFetchedId = startingId;
     console.log("Ending a ID: " + latestAssetId);
 
     // for (let i = startingId; i < latestAssetId; i++) {
-    for (let i = startingId; i < 501; i++) {
+    for (let i = startingId; i < 5; i++) {
       // testing / dev
       const itemUrl = `${BASE_URL}/${i}`;
 
@@ -65,9 +74,10 @@ lastFetchedId = startingId;
 
   pool.addEventListener("fulfilled", function (event) {
     if (event.data.result !== "ERROR") {
-      const item = event.data.result.data.info;
-
-      itemsMap[item.id] = item;
+      const asset = event.data.result;
+      try {
+        mongoDb.insert(type, asset);
+      } catch (error) {}
     }
   });
 
@@ -78,15 +88,6 @@ lastFetchedId = startingId;
   poolPromise.then(
     function () {
       console.log("All promises fulfilled");
-      const payload = {
-        lastFetchedId,
-        itemsMap: itemsMap,
-      };
-
-      // Final Save
-      console.log("Performing Final Save!");
-      fs.writeFileSync(JSON_FILENAME, JSON.stringify(payload));
-      console.log("Save Complete!");
     },
     function (error) {
       console.log("Some promise rejected: " + error.message);
@@ -107,20 +108,9 @@ function fetchItem(itemUrl, id) {
           console.log("Success");
         }
 
-        if (id % 500 === 0) {
-          // if (id % 5 === 0) {
-          //Save every 2500th ID
-          console.log("Saving another 500th - with ID: " + id);
+        const asset = result.data.info;
 
-          lastFetchedId = id;
-          const payload = {
-            lastFetchedId,
-            itemsMap: itemsMap,
-          };
-          fs.writeFileSync(JSON_FILENAME, JSON.stringify(payload));
-        }
-
-        resolve(result);
+        resolve({ _id: id, asset });
       })
       .catch((error) => {
         if (IS_PRINTING) {

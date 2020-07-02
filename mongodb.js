@@ -39,9 +39,13 @@ const insert = function (type, asset) {
 
     collection.insertOne(asset, function (err, res) {
       if (err) {
-        reject(err);
+        if (err.code === 11000) {
+          console.log("Duplicate Key - skipping");
+        }
+        resolve();
+        // reject();
       } else {
-        console.log("SUCCESSFULLY INSERTED A NEW DOCUMENT");
+        console.log("SUCCESSFULLY INSERTED A NEW DOCUMENT: " + asset._id);
 
         resolve(res);
       }

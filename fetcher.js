@@ -7,7 +7,8 @@ const mongoDb = require("./mongodb");
 const IS_PRINTING = false;
 
 const args = process.argv.slice(2);
-const type = args[0];
+// const type = args[0];
+const type = "audio";
 
 console.log(`asset type: ${type}`);
 
@@ -83,7 +84,7 @@ lastFetchedId = startingId;
     }
   };
 
-  const concurrency = 25;
+  const concurrency = 50;
   const pool = new PromisePool(promiseProducer, concurrency);
 
   console.log("Starting Request Pool!");
@@ -93,7 +94,7 @@ lastFetchedId = startingId;
       () => {
         console.log("All promises fulfilled");
 
-        mongoDb.close();
+        // mongoDb.close();
         return;
       },
       (error) => {
@@ -127,7 +128,11 @@ function fetchItem(itemUrl, id, mongoDb) {
 
         lastFetchedId = id;
 
-        fs.writeFile(JSON_FILENAME, { lastFetchedId }, () => null);
+        fs.writeFile(
+          JSON_FILENAME,
+          JSON.stringify({ lastFetchedId }),
+          () => null
+        );
 
         mongoDb.insert(type, asset);
 
@@ -135,6 +140,7 @@ function fetchItem(itemUrl, id, mongoDb) {
         return;
       })
       .catch((error) => {
+        debugger;
         if (IS_PRINTING) {
           console.log("Fail");
         }

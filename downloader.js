@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const fs = require("fs-extra");
 const Path = require("path");
 const { resolve } = require("path");
+const sanitize = require("sanitize-filename");
 const PromisePool = require("es6-promise-pool");
 
 dotenv.config();
@@ -155,12 +156,9 @@ function downloadItem(type, item, SERIAL_KEY) {
             fileExtension = "jpg";
           }
         }
+        const filename = sanitize(`${item.title}.${fileExtension}`);
 
-        const path = Path.resolve(
-          directory,
-          `${type}`,
-          `${item.title}.${fileExtension}`
-        );
+        const path = Path.resolve(directory, `${type}`, filename);
         const writer = fs.createWriteStream(path);
 
         axios

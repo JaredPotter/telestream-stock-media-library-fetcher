@@ -12,8 +12,8 @@ const mongoDb = require("./mongodb");
 const IS_PRINTING = true;
 
 const args = process.argv.slice(2);
-const type = "audio";
-// const type = args[0];
+// const type = "audio";
+const type = args[0];
 console.log(`Type: ${type}`);
 
 if (type !== "video" && type !== "graphic" && type !== "audio") {

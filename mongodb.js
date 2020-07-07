@@ -53,4 +53,19 @@ const insert = function (type, asset) {
   });
 };
 
-module.exports = { connect, insert, close };
+const find = function (type, query = {}) {
+  return new Promise((resolve, reject) => {
+    const collection = database.collection(type);
+
+    collection.find(query).toArray((error, response) => {
+      if (error) {
+        console.log("Failed to find item");
+        resolve();
+      } else {
+        resolve(response);
+      }
+    });
+  });
+};
+
+module.exports = { connect, insert, find, close };

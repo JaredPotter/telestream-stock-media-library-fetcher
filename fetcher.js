@@ -36,7 +36,7 @@ lastFetchedId = startingId;
 
 (async () => {
   try {
-    isDatabaseConnected = await mongoDb.connect();
+    await mongoDb.connect();
   } catch (error) {
     console.log(error);
     console.log("Failed to connect to database.");
@@ -55,26 +55,12 @@ lastFetchedId = startingId;
   });
   const latestAssetId = latestAsset.data.info[0].id;
 
-  // const generatePromises = function* () {
-  //   console.log("Starting at ID: " + startingId);
-  //   console.log("Ending a ID: " + latestAssetId);
-
-  //   // for (let id = startingId; id < latestAssetId; id++) {
-  //   for (let id = startingId; id < 5; id++) {
-  //     // testing / dev
-  //     const itemUrl = `${BASE_URL}/${id}`;
-
-  //     yield fetchItem(itemUrl, id);
-  //   }
-  // };
-  // const promiseProducer = generatePromises();
-
   let currentId = startingId;
   console.log("Starting at ID: " + startingId);
   console.log("Ending a ID: " + latestAssetId);
 
   const promiseProducer = function () {
-    if (currentId < latestAssetId) {
+    if (currentId <= latestAssetId) {
       const itemUrl = `${BASE_URL}/${currentId}`;
 
       currentId++;

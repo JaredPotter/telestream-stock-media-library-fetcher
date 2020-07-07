@@ -1,10 +1,13 @@
 node_modules
 
 audio_list*.json
+audio_last*.json
 
 video_list*.json
+video_last*.json
 
 graphic_list*.json
+graphic_last*.json
 
 .env
 

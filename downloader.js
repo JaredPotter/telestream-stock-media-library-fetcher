@@ -96,7 +96,7 @@ try {
     }
   };
 
-  const concurrency = 4;
+  const concurrency = 12;
   const pool = new PromisePool(promiseProducer, concurrency);
 
   console.log("Starting Request Pool!");
